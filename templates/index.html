@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenSteps - Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/script.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <body class="js-preload">
+    <!-- Add this in the head section -->
+    <style>
+        .js-preload {
+            visibility: hidden;
+            opacity: 0;
+        }
+    </style>
+
+    <!-- Add this right after the opening body tag -->
+    <script>
+        document.body.className = document.body.className.replace('js-preload', '');
+    </script>
+</head>
+<body class="js-preload">
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>GreenSteps</h1>
+            </div>
+            <p class="subtitle">Track your eco-friendly actions</p>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <span>🚴</span>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ bike_count|default(0) }}</h3>
+                    <p>Bike Rides</p>
+                    <small>Saved {{ (bike_count|default(0) * 2)|round }}kg of CO2 emissions</small>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <span>🌳</span>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ tree_count|default(0) }}</h3>
+                    <p>Trees Planted</p>
+                    <small>Added {{ tree_count|default(0) }} new trees to urban forests</small>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <span>♻️</span>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ recycle_kg|default(0) }}</h3>
+                    <p>kg Recycled</p>
+                    <small>Reduced landfill waste</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="badges-section">
+            <h2>Achievement Badges</h2>
+            <div class="badges-grid">
+                <!-- Update badge section -->
+                <!-- Modify badge divs like this -->
+                <div class="badge {{ 'unlocked' if tree_count >=5 }} {% if 'tree_pioneer' in new_achievements %}newly-unlocked{% endif %}">
+                    <div class="badge-icon">
+                        <span>🌳</span>
+                        {% if tree_count|default(0) < 5 %}
+                        <div class="progress-circle">{{ tree_count }}/5</div>
+                        {% endif %}
+                    </div>
+                    <p>Tree Pioneer</p>
+                </div>
+                
+                <div class="badge {{ 'unlocked' if bike_count|default(0) >= 10 else 'locked' }}">
+                    <div class="badge-icon">
+                        <span>🚴</span>
+                    </div>
+                    <p>Cycling Hero</p>
+                </div>
+                
+                <div class="badge {{ 'unlocked' if recycle_kg|default(0) >= 30 else 'locked' }}">
+                    <div class="badge-icon">
+                        <span>♻️</span>
+                    </div>
+                    <p>Recycling Pro</p>
+                </div>
+                
+                <div class="badge locked">
+                    <div class="badge-icon">
+                        <span>💧</span>
+                    </div>
+                    <p>Water Saver</p>
+                </div>
+                
+                <div class="badge locked">
+                    <div class="badge-icon">
+                        <span>⚡</span>
+                    </div>
+                    <p>Energy Wise</p>
+                </div>
+                
+                <div class="badge locked">
+                    <div class="badge-icon">
+                        <span>🌱</span>
+                    </div>
+                    <p>Green Guru</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Replace the action-section with this -->
+        <div class="action-leaderboard-grid">
+            <div class="action-section">
+                <h2>📝 Log New Action</h2>
+                <button id="openModalBtn" class="action-button">
+                    <span>+</span> Track New Activity
+                </button>
+            </div>
+            
+            <div class="leaderboard-section">
+                <h2>🏆 Leaderboard</h2>
+                <div class="leaderboard-card">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>User</th>
+                                <th>Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in leaderboard %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.points }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add this modal dialog at the end of the body but before closing body tag -->
+        <div id="activityModal" class="modal">
+            <div class="modal-content">
+                <button class="modal-close" id="closeModal">×</button>
+                <h2 class="modal-title">Log Activity</h2>
+                <form action="/log-action" method="POST" id="activityForm">
+                    <div class="activity-options">
+                        <div class="activity-option" data-value="bike">
+                            <div class="activity-icon">🚴</div>
+                            <p>Bike Ride</p>
+                        </div>
+                        <div class="activity-option" data-value="plant_tree">
+                            <div class="activity-icon">🌳</div>
+                            <p>Plant Tree</p>
+                        </div>
+                        <div class="activity-option" data-value="recycle">
+                            <div class="activity-icon">♻️</div>
+                            <p>Recycling</p>
+                        </div>
+                    </div>
+                    <input type="hidden" name="action_type" id="selectedActivity">
+                    <button type="submit" class="save-activity">Save Activity</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
